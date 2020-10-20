@@ -7,13 +7,13 @@
  
 // Verificar se foi enviando dados via POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id = (isset($_POST["id"]) && $_POST["id"] != null) ? $_POST["id"] : "";
-    $produto = (isset($_POST["produto"]) && $_POST["produto"] != null) ? $_POST["produto"] : "";
+    $id = (isset($_POST["idprod"]) && $_POST["idprod"] != null) ? $_POST["idprod"] : "";
+    $produto = (isset($_POST["nome"]) && $_POST["nome"] != null) ? $_POST["nome"] : "";
     $preco = (isset($_POST["preco"]) && $_POST["preco"] != null) ? $_POST["preco"] : "";
     $cor = (isset($_POST["cor"]) && $_POST["cor"] != null) ? $_POST["cor"] : NULL;
 } else if (!isset($id)) {
     // Se não se não foi setado nenhum valor para variável $id
-    $id = (isset($_GET["id"]) && $_GET["id"] != null) ? $_GET["id"] : "";
+    $id = (isset($_GET["idprod"]) && $_GET["idprod"] != null) ? $_GET["idprod"] : "";
     $produto = NULL;
     $preco = NULL;
     $cor = NULL;
@@ -32,10 +32,10 @@ try {
 if (isset($_REQUEST["act"]) && $_REQUEST["act"] == "save" && $produto != "") {
     try {
         if ($id != "") {
-            $stmt = $conexao->prepare("UPDATE produtos SET produto=?, preco=?, cor=? WHERE id = ?");
+            $stmt = $conexao->prepare("UPDATE produtos SET idprod=?, preco=?, cor=? WHERE idprod = ?");
             $stmt->bindParam(4, $id);
         } else {
-            $stmt = $conexao->prepare("INSERT INTO produtos (produto, preco, cor) VALUES (?, ?, ?)");
+            $stmt = $conexao->prepare("INSERT INTO produtos (preco, nome , cor) VALUES (?, ?, ?)");
         }
         $stmt->bindParam(1, $produto);
         $stmt->bindParam(2, $preco);
@@ -66,8 +66,8 @@ if (isset($_REQUEST["act"]) && $_REQUEST["act"] == "upd" && $id != "") {
         $stmt->bindParam(1, $id, PDO::PARAM_INT);
         if ($stmt->execute()) {
             $rs = $stmt->fetch(PDO::FETCH_OBJ);
-            $id = $rs->id;
-            $produto = $rs->produto;
+            $id = $rs->idprod;
+            $produto = $rs->nome;
             $preco = $rs->preco;
             $cor = $rs->cor;
         } else {
@@ -81,7 +81,7 @@ if (isset($_REQUEST["act"]) && $_REQUEST["act"] == "upd" && $id != "") {
 // Bloco if utilizado pela etapa Delete
 if (isset($_REQUEST["act"]) && $_REQUEST["act"] == "del" && $id != "") {
     try {
-        $stmt = $conexao->prepare("DELETE FROM produtos WHERE id = ?");
+        $stmt = $conexao->prepare("DELETE FROM produtos WHERE idprod = ?");
         $stmt->bindParam(1, $id, PDO::PARAM_INT);
         if ($stmt->execute()) {
             echo "Registo foi excluído com êxito";
@@ -99,64 +99,50 @@ if (isset($_REQUEST["act"]) && $_REQUEST["act"] == "del" && $id != "") {
         <head>
             <meta charset="UTF-8">
             <title>Tabela de Produtos</title>
+            <link href="css/styles.css" rel="stylesheet"/>
+            <script src="js/seu-script.js"></script>
         </head>
         <body>
-            <form action="?act=save" method="POST" name="form1" >
-                <h1>Tabela de Produtos</h1>
-                <hr>
-                <input type="hidden" name="id" <?php
-                 
-                // Preenche o id no campo id com um valor "value"
-                if (isset($id) && $id != null || $id != "") {
-                    echo "value=\"{$id}\"";
-                }
-                ?> />
-                Produto:
-               <input type="text" name="nome" <?php
- 
-               // Preenche o nome no campo nome com um valor "value"
-               if (isset($produto) && $produto != null || $produto != "") {
-                   echo "value=\"{$produto}\"";
-               }
-               ?> />
-               Preço:
-               <input type="text" name="preco" <?php
- 
-               // Preenche o email no campo email com um valor "value"
-               if (isset($preco) && $preco != null || $preco != "") {
-                   echo "value=\"{$preco}\"";
-               }
-               ?> />
-               Cor:
-               <input type="text" name="cor" <?php
- 
-               // Preenche o celular no campo celular com um valor "value"
-               if (isset($cor) && $cor != null || $cor != "") {
-                   echo "value=\"{$cor}\"";
-               }
-               ?> />
-               <input type="submit" value="salvar" />
-               <input type="reset" value="Novo" />
-               <hr>
-            </form>
-            <table border="1" width="100%">
+            <h2 class="titulo-index"> Tabela de Produtos </h2>
+
+            
+
+            <a href="#abrirModal"><button style="background-color: green; color: white;"><b>INSERE REGISTROS</b></button></a>
+
+        <div id="abrirModal" class="modal">
+          <a href="#fechar" title="Fechar" class="fechar">x</a>
+           <h2 style="color: white;">Insira os registros</h2>
+           <label style="color: white;">PREÇO:</label>
+           <input type="text" name="preco" placeholder="Digite o preço" required>
+           <label style="color: white;">PRODUTO:</label>
+           <input type="text"   name="nome" placeholder="Digite o nome do produto" required>
+           <label style="color: white;">COR:</label>
+         <select name="select">
+           <option value="valor1">Amarelo</option> 
+           <option value="valor2" selected>Azul</option>
+           <option value="valor3">Vermelho</option>
+         </select>
+         <button type="submit" style="background-color: blue; color: white;">Enviar</button>
+        </div>
+            <table class="tabela-prod">
                 <tr>
                     <th>Produtos</th>
                     <th>Preços</th>
                     <th>Cor</th>
+                    <th>Açoes</th>
                 </tr>
                 <?php
  
                 // Bloco que realiza o papel do Read - recupera os dados e apresenta na tela
                 try {
-                    $stmt = $conexao->prepare("SELECT * FROM produtos");
+                    $stmt = $conexao->prepare("SELECT produtos.idprod, produtos.nome, produtos.cor, preco.idpreco, preco.preco FROM produtos, preco WHERE produtos.idprod = preco.idpreco");
                     if ($stmt->execute()) {
                         while ($rs = $stmt->fetch(PDO::FETCH_OBJ)) {
                             echo "<tr>";
-                            echo "<td>".$rs->produto."</td><td>".$rs->preco."</td><td>".$rs->cor
-                                       ."</td><td><center><a href=\"?act=upd&id=".$rs->id."\">[Alterar]</a>"
+                            echo "<td>".$rs->idprod."</td><td>".$rs->preco."</td><td>".$rs->cor
+                                       ."</td><td><center><button href=\"?act=upd&id=".$rs->idprod."\">Alterar</button>"
                                        ."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-                                       ."<a href=\"?act=del&id=".$rs->id."\">[Excluir]</a></center></td>";
+                                       ."<button href=\"?act=del&id=".$rs->idprod."\">Excluir</button></center></td>";
                             echo "</tr>";
                         }
                     } else {
