@@ -6,4 +6,4 @@ Tela home de Produtos
 
 inserção de produtos
 
-<img src= "imagem/inserção de produtos.png>
+<img src= "imagem/modal.png>
