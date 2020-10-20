@@ -4,6 +4,6 @@
 
 <img src="imagem/home.png">
 
-<h2>inserção de produtos</h2>
+<h2>Modal para inserir registros</h2>
 
 <img src= "imagem/modal.png">
